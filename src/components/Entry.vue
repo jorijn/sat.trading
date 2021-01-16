@@ -2,7 +2,10 @@
   <div class="centered">
     <h1>Hoeveel sat krijg je voor een euro?</h1>
     <p class="info">
-      <span ref="sat-elm" class="sat">1 euro = {{ sat }} sat.</span>
+      <span ref="sat-elm" class="sat"
+        ><input class="eur" ref="eur-elm" type="number" min="1" v-model="eur" />
+        euro = {{ calculatedSat }} sat.</span
+      >
     </p>
     <p>
       Op 22 mei 2010 kocht Laszlo Hanyecz 2 pizza’s. Hij betaalde hier 10.000
@@ -62,9 +65,13 @@ export default {
     return {
       websocket: null,
       sat: defaultSatValue,
+      eur: 1,
     };
   },
   computed: {
+    calculatedSat() {
+      return this.format(this.eur * this.sat, 0);
+    },
     pizzaPriceInBitcoin() {
       return (this.sat * defaultPizzaPriceInEur) / 100000000;
     },
@@ -78,10 +85,40 @@ export default {
       return this.format(this.pizzaPriceInSat, 0);
     },
   },
-  created() {
+  mounted() {
     this.initWebsocket();
+    this.parseValueFromUrl();
+
+    fetch("https://api.blockchain.com/v3/exchange/tickers/BTC-EUR?cors=true")
+      .then((response) => response.json())
+      .then((data) => this.setSatFromPrice(data.last_trade_price));
+
+    window.onhashchange = this.parseValueFromUrl;
+  },
+  watch: {
+    eur() {
+      // auto adapt the width of the input field to match the size of the number
+      if (this.eur.toString().length > 2) {
+        this.$refs["eur-elm"].style.width = this.eur.toString().length + "rem";
+      } else {
+        this.$refs["eur-elm"].style.width = "2rem";
+      }
+
+      window.location.hash = "#" + this.eur.toString();
+    },
   },
   methods: {
+    setSatFromPrice(price) {
+      this.sat = parseInt(((1 / price) * 100000000).toFixed(0));
+    },
+    parseValueFromUrl() {
+      if (window.location.hash) {
+        const rawValue = window.location.hash.substr(1);
+        if (!isNaN(parseFloat(rawValue))) {
+          this.eur = rawValue;
+        }
+      }
+    },
     format: function (value, digits) {
       return value.toLocaleString("nl-NL", { minimumFractionDigits: digits });
     },
@@ -105,9 +142,7 @@ export default {
 
         switch (response.event) {
           case "trade": {
-            this.sat = parseInt(
-              ((1 / response.data.price) * 100000000).toFixed(0)
-            );
+            this.setSatFromPrice(response.data.price);
             break;
           }
           case "bts:request_reconnect": {
@@ -124,3 +159,28 @@ export default {
   },
 };
 </script>
+
+<style scoped>
+input[type="number"].eur {
+  border: 0;
+  border-bottom: 1px solid #42b983;
+  background: inherit;
+  font: inherit;
+  width: 2rem;
+  text-align: center;
+}
+
+input[type="number"].eur:focus {
+  outline: 1px solid #42b983;
+}
+
+input[type="number"]::-webkit-outer-spin-button,
+input[type="number"]::-webkit-inner-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+
+input[type="number"] {
+  -moz-appearance: textfield;
+}
+</style>
