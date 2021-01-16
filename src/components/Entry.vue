@@ -64,7 +64,6 @@
 <script>
 import GitHubLogo from "../../public/assets/github.png";
 
-const defaultSatValue = 3200;
 const defaultPizzaPriceInEur = 20;
 
 export default {
@@ -75,8 +74,8 @@ export default {
   data() {
     return {
       websocket: null,
-      sat: defaultSatValue,
       eur: 1,
+      sat: 3200,
       GitHubLogo,
     };
   },
