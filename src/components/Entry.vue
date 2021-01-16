@@ -49,10 +49,21 @@
       door <a href="https://jorijn.com/">Jorijn</a> &
       <a href="https://satoshiradio.nl">Satoshi Radio</a>
     </p>
+    <p>
+      <a
+        href="https://github.com/jorijn/sat.trading"
+        target="_blank"
+        rel="noopener"
+      >
+        <img :src="GitHubLogo" alt="GitHub" width="16" />
+      </a>
+    </p>
   </div>
 </template>
 
 <script>
+import GitHubLogo from "../../public/assets/github.png";
+
 const defaultSatValue = 3200;
 const defaultPizzaPriceInEur = 20;
 
@@ -66,6 +77,7 @@ export default {
       websocket: null,
       sat: defaultSatValue,
       eur: 1,
+      GitHubLogo,
     };
   },
   computed: {
