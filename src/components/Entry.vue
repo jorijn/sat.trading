@@ -106,13 +106,14 @@ export default {
   },
   mounted() {
     this.initWebsocket();
-    this.parseValueFromUrl();
+    this.parseValueFromURL();
+    this.setURL();
 
     fetch("https://api.blockchain.com/v3/exchange/tickers/BTC-EUR?cors=true")
       .then((response) => response.json())
       .then((data) => this.setSatFromPrice(data.last_trade_price));
 
-    window.onhashchange = this.parseValueFromUrl;
+    window.onhashchange = this.parseValueFromURL;
   },
   watch: {
     inputEur() {
@@ -124,7 +125,8 @@ export default {
         this.$refs["eur-elm"].style.width = "2rem";
       }
 
-      window.location.hash = "#" + this.inputEur.toString();
+      //   window.location.hash = "#" + this.inputEur.toString();
+      this.setURL();
     },
     inputSat() {
       // auto adapt the width of the input field to match the size of the number
@@ -135,20 +137,28 @@ export default {
         this.$refs["sat-elm"].style.width = "2rem";
       }
 
-      window.location.hash = "#" + this.inputSat.toString();
+      //   window.location.hash = "#" + this.inputSat.toString();
+      this.setURL();
     },
   },
   methods: {
     setSatFromPrice(price) {
       this.sat = parseInt(((1 / price) * 100000000).toFixed(0));
     },
-    parseValueFromUrl() {
-      if (window.location.hash) {
-        const rawValue = window.location.hash.substr(1);
-        if (!isNaN(parseFloat(rawValue))) {
-          this.inputEur = rawValue;
-        }
+    parseValueFromURL() {
+      const queryString = window.location.search;
+      if (queryString) {
+        const urlParams = new URLSearchParams(queryString);
+        this.inputEur = urlParams.get("eur");
+        this.inputSat = urlParams.get("sat");
       }
+    },
+    setURL() {
+      window.history.replaceState(
+        null,
+        "",
+        "?eur=" + this.inputEur + "&sat=" + this.inputSat
+      );
     },
     format: function (value, digits) {
       return value.toLocaleString("nl-NL", {
