@@ -3,7 +3,13 @@
     <h1>Hoeveel sat krijg je voor een euro?</h1>
     <p class="info">
       <span ref="sat-elm" class="sat"
-        ><input class="eur" ref="eur-elm" type="number" min="1" v-model="eur" />
+        ><input
+          class="eur"
+          ref="eur-elm"
+          type="number"
+          min="1"
+          v-model="inputEur"
+        />
         euro = {{ calculatedSat }} sat.</span
       >
     </p>
@@ -74,14 +80,14 @@ export default {
   data() {
     return {
       websocket: null,
-      eur: 1,
+      inputEur: 1,
       sat: 3200,
       GitHubLogo,
     };
   },
   computed: {
     calculatedSat() {
-      return this.format(this.eur * this.sat, 0);
+      return this.format(this.inputEur * this.sat, 0);
     },
     pizzaPriceInBitcoin() {
       return (this.sat * defaultPizzaPriceInEur) / 100000000;
@@ -107,15 +113,16 @@ export default {
     window.onhashchange = this.parseValueFromUrl;
   },
   watch: {
-    eur() {
+    inputEur() {
       // auto adapt the width of the input field to match the size of the number
-      if (this.eur.toString().length > 2) {
-        this.$refs["eur-elm"].style.width = this.eur.toString().length + "rem";
+      if (this.inputEur.toString().length > 2) {
+        this.$refs["eur-elm"].style.width =
+          this.inputEur.toString().length + "rem";
       } else {
         this.$refs["eur-elm"].style.width = "2rem";
       }
 
-      window.location.hash = "#" + this.eur.toString();
+      window.location.hash = "#" + this.inputEur.toString();
     },
   },
   methods: {
@@ -126,12 +133,14 @@ export default {
       if (window.location.hash) {
         const rawValue = window.location.hash.substr(1);
         if (!isNaN(parseFloat(rawValue))) {
-          this.eur = rawValue;
+          this.inputEur = rawValue;
         }
       }
     },
     format: function (value, digits) {
-      return value.toLocaleString("nl-NL", { minimumFractionDigits: digits });
+      return value.toLocaleString("nl-NL", {
+        minimumFractionDigits: digits,
+      });
     },
     initWebsocket() {
       let ws;
@@ -182,7 +191,7 @@ input[type="number"].eur {
 }
 
 input[type="number"].eur:focus {
-  outline: 1px solid #42b983;
+  outline: none;
 }
 
 input[type="number"]::-webkit-outer-spin-button,
