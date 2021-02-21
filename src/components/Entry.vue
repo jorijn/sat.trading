@@ -14,7 +14,7 @@
         {{ calculatedEur }} euro.</span
       >
     </p>
-    <p>
+    <p class="story-start">
       Op 22 mei 2010 kocht Laszlo Hanyecz 2 pizza’s. Hij betaalde hier 10.000
       Bitcoin voor. Tegenwoordig zou je voor 2 pizza’s ongeveer
       <strong>{{ pizzaPriceInBitcoinFormatted }}</strong> Bitcoin betalen.
@@ -214,7 +214,12 @@ p.info {
   font-size: 1.2rem;
 }
 
+.story-start {
+  margin-top: 40px;
+}
+
 input[type="number"] {
+  color: var(--color-text);
   border: 0;
   border-bottom: 1px solid #42b983;
   background: inherit;

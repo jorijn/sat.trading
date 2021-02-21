@@ -31,13 +31,18 @@ export default {
   }
 }
 
+html {
+  background-color: var(--color-background);
+}
+
 #app {
   font-family: Avenir, Helvetica, Arial, sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   text-align: center;
-  color: #2c3e50;
+  color: var(--color-text);
   margin-top: 60px;
+  background-color: var(--color-background);
 }
 
 .centered {
