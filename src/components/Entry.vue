@@ -4,7 +4,6 @@
         <p class="info">
             <span
                 ><input
-                    class="eur"
                     ref="eur-elm"
                     type="number"
                     min="1"
@@ -14,6 +13,17 @@
             >
         </p>
         <h3>Hoeveel euro krijg je voor een sat?</h3>
+        <p class="info">
+            <span
+                ><input
+                    ref="eur-elm"
+                    type="number"
+                    min="1"
+                    v-model="inputEur"
+                />
+                euro = {{ calculatedSat }} sat.</span
+            >
+        </p>
         <p>
             Op 22 mei 2010 kocht Laszlo Hanyecz 2 pizza’s. Hij betaalde hier
             10.000 Bitcoin voor. Tegenwoordig zou je voor 2 pizza’s ongeveer
@@ -196,7 +206,7 @@ p.info {
     font-size: 1.2rem;
 }
 
-input[type="number"].eur {
+input[type="number"] {
     border: 0;
     border-bottom: 1px solid #42b983;
     background: inherit;
@@ -205,7 +215,7 @@ input[type="number"].eur {
     text-align: center;
 }
 
-input[type="number"].eur:focus {
+input[type="number"]:focus {
     outline: none;
 }
 
