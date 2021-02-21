@@ -14,6 +14,23 @@ export default {
 </script>
 
 <style>
+:root {
+  --color-light: #ffffff;
+  --color-light-text: #eeeef0;
+  --color-dark: #2c3e50;
+  --color-primary: #42b983;
+
+  --color-background: var(--color-light);
+  --color-text: var(--color-dark);
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --color-background: var(--color-dark);
+    --color-text: var(--color-light-text);
+  }
+}
+
 #app {
   font-family: Avenir, Helvetica, Arial, sans-serif;
   -webkit-font-smoothing: antialiased;

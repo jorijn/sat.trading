@@ -11,7 +11,7 @@
     <p class="info">
       <span
         ><input ref="sat-elm" type="number" min="1" v-model="inputSat" /> sat =
-        {{ calculatedSat }} euro.</span
+        {{ calculatedEur }} euro.</span
       >
     </p>
     <p>
@@ -89,7 +89,13 @@ export default {
   },
   computed: {
     calculatedSat() {
-      return this.format(this.inputEur * this.sat, 0);
+      return this.format(this.inputEur * this.sat, 0, 0);
+    },
+    calculatedEur() {
+      if (this.inputSat / this.sat >= 1) {
+        return this.format(this.inputSat / this.sat, 2, 2);
+      }
+      return this.format(this.inputSat / this.sat, 2, 3);
     },
     pizzaPriceInBitcoin() {
       return (this.sat * defaultPizzaPriceInEur) / 100000000;
@@ -125,7 +131,6 @@ export default {
         this.$refs["eur-elm"].style.width = "2rem";
       }
 
-      //   window.location.hash = "#" + this.inputEur.toString();
       this.setURL();
     },
     inputSat() {
@@ -137,7 +142,6 @@ export default {
         this.$refs["sat-elm"].style.width = "2rem";
       }
 
-      //   window.location.hash = "#" + this.inputSat.toString();
       this.setURL();
     },
   },
@@ -160,9 +164,10 @@ export default {
         "?eur=" + this.inputEur + "&sat=" + this.inputSat
       );
     },
-    format: function (value, digits) {
+    format: function (value, min, max) {
       return value.toLocaleString("nl-NL", {
-        minimumFractionDigits: digits,
+        minimumFractionDigits: min,
+        maximumFractionDigits: max,
       });
     },
     initWebsocket() {
