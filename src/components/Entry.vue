@@ -2,17 +2,12 @@
   <div class="centered">
     <h1>Hoeveel sat krijg je voor een euro?</h1>
     <p class="info">
-      <span
-        ><input ref="eur-elm" type="number" min="1" v-model="inputEur" /> euro =
-        {{ calculatedSat }} sat.</span
-      >
-    </p>
-    <h3>Hoeveel euro krijg je voor een sat?</h3>
-    <p class="info">
-      <span
-        ><input ref="sat-elm" type="number" min="1" v-model="inputSat" /> sat =
-        {{ calculatedEur }} euro.</span
-      >
+      <span>
+        <input ref="eur-elm" type="number" min="1" v-model="eur" />
+        euro =
+        <input ref="sat-elm" type="number" min="1" v-model="sat" />
+        sat.
+      </span>
     </p>
     <p class="story-start">
       Op 22 mei 2010 kocht Laszlo Hanyecz 2 pizza’s. Hij betaalde hier 10.000
@@ -81,27 +76,18 @@ export default {
   data() {
     return {
       websocket: null,
-      inputEur: 1,
-      inputSat: 10,
-      sat: 3200,
+      eur: 1,
+      sat: 10,
+      rate: 2000,
       GitHubLogo,
     };
   },
   computed: {
-    calculatedSat() {
-      return this.format(this.inputEur * this.sat, 0, 0);
-    },
-    calculatedEur() {
-      if (this.inputSat / this.sat >= 1) {
-        return this.format(this.inputSat / this.sat, 2, 2);
-      }
-      return this.format(this.inputSat / this.sat, 2, 3);
-    },
     pizzaPriceInBitcoin() {
-      return (this.sat * defaultPizzaPriceInEur) / 100000000;
+      return (this.rate * defaultPizzaPriceInEur) / 100000000;
     },
     pizzaPriceInSat() {
-      return this.sat * defaultPizzaPriceInEur;
+      return this.rate * defaultPizzaPriceInEur;
     },
     pizzaPriceInBitcoinFormatted() {
       return this.format(this.pizzaPriceInBitcoin, 5);
@@ -117,52 +103,56 @@ export default {
 
     fetch("https://api.blockchain.com/v3/exchange/tickers/BTC-EUR?cors=true")
       .then((response) => response.json())
-      .then((data) => this.setSatFromPrice(data.last_trade_price));
+      .then((data) => {
+        this.setRateFromPrice(data.last_trade_price);
+        this.sat = this.format(this.eur * this.rate, 0, 0);
+      });
 
     window.onhashchange = this.parseValueFromURL;
   },
   watch: {
-    inputEur() {
+    eur() {
       // auto adapt the width of the input field to match the size of the number
-      if (this.inputEur.toString().length > 2) {
-        this.$refs["eur-elm"].style.width =
-          this.inputEur.toString().length + "rem";
+      if (this.eur.toString().length > 2) {
+        this.$refs["eur-elm"].style.width = this.eur.toString().length + "rem";
       } else {
         this.$refs["eur-elm"].style.width = "2rem";
       }
 
+      this.sat = this.format(this.eur * this.rate, 0, 0);
+
       this.setURL();
     },
-    inputSat() {
+    sat() {
       // auto adapt the width of the input field to match the size of the number
-      if (this.inputSat.toString().length > 2) {
-        this.$refs["sat-elm"].style.width =
-          this.inputSat.toString().length + "rem";
+      if (this.sat.toString().length > 2) {
+        this.$refs["sat-elm"].style.width = this.sat.toString().length + "rem";
       } else {
         this.$refs["sat-elm"].style.width = "2rem";
       }
 
-      this.setURL();
+      //   if (this.sat / this.sat >= 1) {
+      //     this.eur = this.format(this.sat / this.sat, 2, 2);
+      //   }
+      //   this.eur = this.format(this.sat / this.sat, 2, 3);
+
+      //   this.setURL();
     },
   },
   methods: {
-    setSatFromPrice(price) {
-      this.sat = parseInt(((1 / price) * 100000000).toFixed(0));
+    setRateFromPrice(price) {
+      this.rate = parseInt(((1 / price) * 100000000).toFixed(0));
     },
     parseValueFromURL() {
-      const queryString = window.location.search;
-      if (queryString) {
-        const urlParams = new URLSearchParams(queryString);
-        this.inputEur = urlParams.get("eur");
-        this.inputSat = urlParams.get("sat");
+      if (window.location.hash) {
+        const rawValue = window.location.hash.substr(1);
+        if (!isNaN(parseFloat(rawValue))) {
+          this.eur = rawValue;
+        }
       }
     },
     setURL() {
-      window.history.replaceState(
-        null,
-        "",
-        "?eur=" + this.inputEur + "&sat=" + this.inputSat
-      );
+      window.location.hash = "#" + this.eur.toString();
     },
     format: function (value, min, max) {
       return value.toLocaleString("nl-NL", {
@@ -190,7 +180,7 @@ export default {
 
         switch (response.event) {
           case "trade": {
-            this.setSatFromPrice(response.data.price);
+            this.setRateFromPrice(response.data.price);
             break;
           }
           case "bts:request_reconnect": {
