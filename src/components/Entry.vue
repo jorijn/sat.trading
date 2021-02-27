@@ -3,9 +3,21 @@
     <h1>Hoeveel sat krijg je voor een euro?</h1>
     <p class="info">
       <span>
-        <input ref="eur-elm" type="number" min="1" v-model="eur" />
+        <input
+          ref="eur-elm"
+          type="number"
+          min="1"
+          v-model="eur"
+          @focus="lastChanged = 'eur'"
+        />
         euro =
-        <input ref="sat-elm" type="number" min="1" v-model="sat" />
+        <input
+          ref="sat-elm"
+          type="number"
+          min="1"
+          v-model="sat"
+          @focus="lastChanged = 'sat'"
+        />
         sat.
       </span>
     </p>
@@ -77,23 +89,13 @@ export default {
     return {
       websocket: null,
       eur: 1,
+      sat: 10,
       rate: 2000,
+      lastChanged: "eur",
       GitHubLogo,
     };
   },
   computed: {
-    sat: {
-      get() {
-        return (this.eur * this.rate).toFixed(0);
-      },
-      set(num) {
-        if (num / this.rate >= 1) {
-          this.eur = (num / this.rate).toFixed(2);
-        } else {
-          this.eur = (num / this.rate).toFixed(3);
-        }
-      },
-    },
     pizzaPriceInBitcoin() {
       return (this.rate * defaultPizzaPriceInEur) / 100000000;
     },
@@ -123,25 +125,51 @@ export default {
   },
   watch: {
     eur() {
-      this.setURL();
+      // auto adapt the width of the input field to match the size of the number
       if (this.eur.toString().length > 2) {
         this.$refs["eur-elm"].style.width = this.eur.toString().length + "rem";
       } else {
         this.$refs["eur-elm"].style.width = "2rem";
       }
+
+      if (this.lastChanged == "eur") {
+        this.sat = (this.eur * this.rate).toFixed(0);
+      }
+
+      this.setURL();
     },
     sat() {
-      this.setURL();
+      // auto adapt the width of the input field to match the size of the number
       if (this.sat.toString().length > 2) {
         this.$refs["sat-elm"].style.width = this.sat.toString().length + "rem";
       } else {
         this.$refs["sat-elm"].style.width = "2rem";
+      }
+
+      if (this.lastChanged == "sat") {
+        if (this.sat / this.rate >= 1) {
+          this.eur = (this.sat / this.rate).toFixed(2);
+        } else {
+          this.eur = (this.sat / this.rate).toFixed(3);
+        }
+
+        this.setURL();
       }
     },
   },
   methods: {
     setRateFromPrice(price) {
       this.rate = parseInt(((1 / price) * 100000000).toFixed(0));
+
+      if (this.lastChanged == "eur") {
+        this.sat = (this.eur * this.rate).toFixed(0);
+      } else {
+        if (this.sat / this.rate >= 1) {
+          this.eur = (this.sat / this.rate).toFixed(2);
+        } else {
+          this.eur = (this.sat / this.rate).toFixed(3);
+        }
+      }
     },
     parseValueFromURL() {
       if (window.location.hash) {
