@@ -125,7 +125,6 @@ export default {
   },
   watch: {
     eur() {
-      // auto adapt the width of the input field to match the size of the number
       if (this.eur.toString().length > 2) {
         this.$refs["eur-elm"].style.width = this.eur.toString().length + "rem";
       } else {
@@ -139,7 +138,6 @@ export default {
       this.setURL();
     },
     sat() {
-      // auto adapt the width of the input field to match the size of the number
       if (this.sat.toString().length > 2) {
         this.$refs["sat-elm"].style.width = this.sat.toString().length + "rem";
       } else {
