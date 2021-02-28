@@ -61,7 +61,8 @@
     </ul>
     <p class="authors">
       door <a href="https://jorijn.com/">Jorijn</a> &
-      <a href="https://satoshiradio.nl">Satoshi Radio</a>
+      <a href="https://satoshiradio.nl">Satoshi Radio</a> &
+      <a href="https://github.com/Lexus123">Lex</a>
     </p>
     <p>
       <a
