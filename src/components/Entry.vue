@@ -60,7 +60,7 @@
       </li>
     </ul>
     <p class="authors">
-      door <a href="https://jorijn.com/">Jorijn</a> &
+      door <a href="https://jorijn.com/">Jorijn</a>,
       <a href="https://satoshiradio.nl">Satoshi Radio</a> &
       <a href="https://github.com/Lexus123">Lex</a>
     </p>
@@ -113,7 +113,6 @@ export default {
   mounted() {
     this.initWebsocket();
     this.parseValueFromURL();
-    this.setURL();
 
     fetch("https://api.blockchain.com/v3/exchange/tickers/BTC-EUR?cors=true")
       .then((response) => response.json())
@@ -179,7 +178,11 @@ export default {
       }
     },
     setURL() {
-      window.location.hash = "#" + this.eur.toString();
+      if (this.eur != 1) {
+        window.location.hash = "#" + this.eur.toString();
+      } else {
+        window.location.hash = "";
+      }
     },
     format: function (value, min, max) {
       return value.toLocaleString("nl-NL", {
