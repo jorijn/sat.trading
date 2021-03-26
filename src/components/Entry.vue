@@ -37,8 +37,8 @@
       Euro in Satoshi om te zetten, hebben we deze website gemaakt.
     </p>
     <p>
-      Wil je bovenstaand bedrag streamen, bijvoorbeeld naar je favoriete
-      podcast? Stel je app dan in op
+      Wil je bovenstaand bedrag streamen voor ieder uur dat je naar je favoriete
+      podcast luistert? Stel je app dan in op
       <strong>{{ streamingPriceInSatFormatted }} sats per minuut.</strong>
       Een voorbeeld van een wallet waarmee dat kan is
       <a href="https://breez.technology/" target="_blank" rel="noopener"
