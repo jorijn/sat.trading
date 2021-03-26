@@ -36,6 +36,15 @@
       deelbaar is. Omdat het nog een beetje lastig is om snel de waarde van 1
       Euro in Satoshi om te zetten, hebben we deze website gemaakt.
     </p>
+    <p>
+      Wil je bovenstaand bedrag streamen voor ieder uur dat je naar je favoriete
+      podcast luistert? Stel je app dan in op
+      <strong>{{ streamingPriceInSatFormatted }} sats per minuut.</strong>
+      Een voorbeeld van een wallet waarmee dat kan is
+      <a href="https://breez.technology/" target="_blank" rel="noopener"
+        >Breez</a
+      >.
+    </p>
     <h3>Meer informatie over Bitcoin</h3>
     <ul>
       <li>
@@ -108,6 +117,9 @@ export default {
     },
     pizzaPriceInSatFormatted() {
       return this.format(this.pizzaPriceInSat, 0);
+    },
+    streamingPriceInSatFormatted() {
+      return (this.sat / 60).toFixed(0);
     },
   },
   mounted() {
