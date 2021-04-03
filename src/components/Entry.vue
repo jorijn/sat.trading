@@ -1,6 +1,6 @@
 <template>
   <div class="centered">
-    <h1>Hoeveel sat krijg je voor een euro?</h1>
+    <h1>{{ t("heading") }}</h1>
     <p class="info">
       <span>
         <input
@@ -22,13 +22,12 @@
       </span>
     </p>
     <p class="story-start">
-      Op 22 mei 2010 kocht Laszlo Hanyecz 2 pizza’s. Hij betaalde hier 10.000
-      Bitcoin voor. Tegenwoordig zou je voor 2 pizza’s ongeveer
-      <strong>{{ pizzaPriceInBitcoinFormatted }}</strong> Bitcoin betalen.
-      Klinkt niet echt lekker vinden wij. Wij hebben het liever over
-      {{ pizzaPriceInSatFormatted }}
-      Satoshi. Sa-watte?! Een Satoshi is de kleinst mogelijke eenheid van
-      Bitcoin (0.00000001 BTC).
+      {{
+        t("pizza_explanation", {
+          pizzaPriceInBitcoinFormatted,
+          pizzaPriceInSatFormatted,
+        })
+      }}
     </p>
     <p>
       Wij vinden het belangrijk om het te hebben over Satoshi in plaats van
@@ -87,6 +86,7 @@
 
 <script>
 import GitHubLogo from "../../public/assets/github.png";
+import { useI18n } from "vue-i18n";
 
 const defaultPizzaPriceInEur = 20;
 
@@ -166,6 +166,14 @@ export default {
         this.setURL();
       }
     },
+  },
+  setup() {
+    const { t } = useI18n({
+      inheritLocale: true,
+      useScope: "local",
+    });
+
+    return { t };
   },
   methods: {
     setRateFromPrice(price) {

@@ -1,0 +1,4 @@
+{
+  "heading": "How much sat would you get for a euro?",
+  "pizza_explanation": "On May 22, 2010, Laszlo Hanyecz bought 2 pizzas. He paid 10,000 Bitcoin for this. Today you would pay about <strong>{pizzaPriceInBitcoinFormatted}</strong> Bitcoin for 2 pizzas. Doesn't sound really good, we think. We prefer to talk about {pizzaPriceInSatFormatted} Satoshi. Sa-what?! A Satoshi is the smallest possible unit of Bitcoin (0.00000001 BTC)."
+}
