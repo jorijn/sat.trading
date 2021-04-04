@@ -1,13 +1,16 @@
 <template>
+  <LanguageSwitcher />
   <Entry />
 </template>
 
 <script>
 import Entry from "./components/Entry.vue";
+import LanguageSwitcher from "@/components/LanguageSwitcher";
 
 export default {
   name: "App",
   components: {
+    LanguageSwitcher,
     Entry,
   },
 };
@@ -36,7 +39,7 @@ html {
 }
 
 #app {
-  font-family: Avenir, Helvetica, Arial, sans-serif;
+  font-family: "Nunito", sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   text-align: center;

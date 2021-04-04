@@ -21,30 +21,29 @@
         sat.
       </span>
     </p>
-    <p class="story-start">
-      {{
-        t("pizza_explanation", {
-          pizzaPriceInBitcoinFormatted,
-          pizzaPriceInSatFormatted,
-        })
-      }}
-    </p>
-    <p>
-      Wij vinden het belangrijk om het te hebben over Satoshi in plaats van
-      Bitcoin. Veel mensen weten namelijk niet dat een Bitcoin überhaupt
-      deelbaar is. Omdat het nog een beetje lastig is om snel de waarde van 1
-      Euro in Satoshi om te zetten, hebben we deze website gemaakt.
-    </p>
-    <p>
-      Wil je bovenstaand bedrag streamen voor ieder uur dat je naar je favoriete
-      podcast luistert? Stel je app dan in op
-      <strong>{{ streamingPriceInSatFormatted }} sats per minuut.</strong>
-      Een voorbeeld van een wallet waarmee dat kan is
-      <a href="https://breez.technology/" target="_blank" rel="noopener"
-        >Breez</a
-      >.
-    </p>
-    <h3>Meer informatie over Bitcoin</h3>
+    <i18n-t keypath="pizza_explanation" tag="p" class="story-start">
+      <template v-slot:bitcoin>
+        <strong>{{ pizzaPriceInBitcoinFormatted }}</strong>
+      </template>
+      <template v-slot:sat>
+        <strong>{{ pizzaPriceInSatFormatted }}</strong>
+      </template>
+    </i18n-t>
+    <i18n-t keypath="our_cause" tag="p"> </i18n-t>
+    <i18n-t keypath="stream_sat" tag="p">
+      <template v-slot:stream_sat_minute>
+        <strong
+          >{{ streamingPriceInSatFormatted }}
+          {{ t("stream_sat_minute_suffix") }}</strong
+        >
+      </template>
+      <template v-slot:stream_sat_wallet>
+        <a href="https://breez.technology/" target="_blank" rel="noopener"
+          >Breez</a
+        >
+      </template>
+    </i18n-t>
+    <h3>{{ t("more_information_heading") }}</h3>
     <ul>
       <li>
         <a href="https://bitcoin.nl/" target="_blank" rel="noopener"
@@ -68,7 +67,7 @@
       </li>
     </ul>
     <p class="authors">
-      door <a href="https://jorijn.com/">Jorijn</a>,
+      {{ t("by") }} <a href="https://jorijn.com/">Jorijn</a>,
       <a href="https://satoshiradio.nl">Satoshi Radio</a> &
       <a href="https://github.com/Lexus123">Lex</a>
     </p>
@@ -168,10 +167,7 @@ export default {
     },
   },
   setup() {
-    const { t } = useI18n({
-      inheritLocale: true,
-      useScope: "local",
-    });
+    const { t } = useI18n();
 
     return { t };
   },
