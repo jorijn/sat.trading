@@ -1,6 +1,6 @@
 <template>
   <div class="centered">
-    <h1>Hoeveel sat krijg je voor een euro?</h1>
+    <h1>{{ t("heading") }}</h1>
     <p class="info">
       <span>
         <input
@@ -21,55 +21,36 @@
         sat.
       </span>
     </p>
-    <p class="story-start">
-      Op 22 mei 2010 kocht Laszlo Hanyecz 2 pizza’s. Hij betaalde hier 10.000
-      Bitcoin voor. Tegenwoordig zou je voor 2 pizza’s ongeveer
-      <strong>{{ pizzaPriceInBitcoinFormatted }}</strong> Bitcoin betalen.
-      Klinkt niet echt lekker vinden wij. Wij hebben het liever over
-      {{ pizzaPriceInSatFormatted }}
-      Satoshi. Sa-watte?! Een Satoshi is de kleinst mogelijke eenheid van
-      Bitcoin (0.00000001 BTC).
-    </p>
-    <p>
-      Wij vinden het belangrijk om het te hebben over Satoshi in plaats van
-      Bitcoin. Veel mensen weten namelijk niet dat een Bitcoin überhaupt
-      deelbaar is. Omdat het nog een beetje lastig is om snel de waarde van 1
-      Euro in Satoshi om te zetten, hebben we deze website gemaakt.
-    </p>
-    <p>
-      Wil je bovenstaand bedrag streamen voor ieder uur dat je naar je favoriete
-      podcast luistert? Stel je app dan in op
-      <strong>{{ streamingPriceInSatFormatted }} sats per minuut.</strong>
-      Een voorbeeld van een wallet waarmee dat kan is
-      <a href="https://breez.technology/" target="_blank" rel="noopener"
-        >Breez</a
-      >.
-    </p>
-    <h3>Meer informatie over Bitcoin</h3>
+    <i18n-t keypath="pizza_explanation" tag="p" class="story-start">
+      <template v-slot:bitcoin>
+        <strong>{{ pizzaPriceInBitcoinFormatted }}</strong>
+      </template>
+      <template v-slot:sat>
+        <strong>{{ pizzaPriceInSatFormatted }}</strong>
+      </template>
+    </i18n-t>
+    <i18n-t keypath="our_cause" tag="p"> </i18n-t>
+    <i18n-t keypath="stream_sat" tag="p">
+      <template v-slot:stream_sat_minute>
+        <strong
+          >{{ streamingPriceInSatFormatted }}
+          {{ t("stream_sat_minute_suffix") }}</strong
+        >
+      </template>
+      <template v-slot:stream_sat_wallet>
+        <a href="https://breez.technology/" target="_blank" rel="noopener"
+          >Breez</a
+        >
+      </template>
+    </i18n-t>
+    <h3>{{ t("more_information_heading") }}</h3>
     <ul>
-      <li>
-        <a href="https://bitcoin.nl/" target="_blank" rel="noopener"
-          >Bitcoin.nl</a
-        >
-      </li>
-      <li>
-        <a href="https://bitonic.nl" target="_blank" rel="noopener"
-          >Bitcoin kopen</a
-        >
-      </li>
-      <li>
-        <a href="https://beginnenmetbitcoin.com/" target="_blank" rel="noopener"
-          >Beginnen met Bitcoin (podcast)</a
-        >
-      </li>
-      <li>
-        <a href="https://satoshiradio.nl/" target="_blank" rel="noopener"
-          >Satoshi Radio (podcast)</a
-        >
+      <li v-for="link of information_links" :key="link.href">
+        <a :href="link.href" target="_blank" rel="noopener">{{ link.label }}</a>
       </li>
     </ul>
     <p class="authors">
-      door <a href="https://jorijn.com/">Jorijn</a>,
+      {{ t("by") }} <a href="https://jorijn.com/">Jorijn</a>,
       <a href="https://satoshiradio.nl">Satoshi Radio</a> &
       <a href="https://github.com/Lexus123">Lex</a>
     </p>
@@ -82,16 +63,22 @@
         <img :src="GitHubLogo" alt="GitHub" width="16" />
       </a>
     </p>
+    <p>
+      <LanguageSwitcher />
+    </p>
   </div>
 </template>
 
 <script>
 import GitHubLogo from "../../public/assets/github.png";
+import { useI18n } from "vue-i18n";
+import LanguageSwitcher from "@/components/LanguageSwitcher";
 
 const defaultPizzaPriceInEur = 20;
 
 export default {
   name: "Entry",
+  components: { LanguageSwitcher },
   props: {
     msg: String,
   },
@@ -106,6 +93,15 @@ export default {
     };
   },
   computed: {
+    information_links() {
+      const data = this.t("information_links");
+      const links = [];
+      for (let link of data.split("**")) {
+        let [href, label] = link.split("##");
+        links.push({ href, label });
+      }
+      return links;
+    },
     pizzaPriceInBitcoin() {
       return (this.rate * defaultPizzaPriceInEur) / 100000000;
     },
@@ -166,6 +162,11 @@ export default {
         this.setURL();
       }
     },
+  },
+  setup() {
+    const { t } = useI18n();
+
+    return { t };
   },
   methods: {
     setRateFromPrice(price) {
