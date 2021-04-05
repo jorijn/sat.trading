@@ -5,5 +5,6 @@
   "stream_sat": "Wil je bovenstaand bedrag streamen voor ieder uur dat je naar je favoriete podcast luistert? Stel je app dan in op {stream_sat_minute}. Een voorbeeld van een wallet waarmee dat kan is {stream_sat_wallet}.",
   "stream_sat_minute_suffix": "per minuut",
   "more_information_heading": "Meer informatie over Bitcoin",
-  "by": "door"
+  "by": "door",
+  "information_links": "https://bitcoin.nl/##Bitcoin.nl**https://bitonic.nl/##Bitcoin kopen**https://beginnenmetbitcoin.com/##Beginnen met Bitcoin (podcast)**https://satoshiradio.nl##Satoshi Radio (podcast)"
 }

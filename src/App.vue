@@ -1,16 +1,13 @@
 <template>
-  <LanguageSwitcher />
   <Entry />
 </template>
 
 <script>
 import Entry from "./components/Entry.vue";
-import LanguageSwitcher from "@/components/LanguageSwitcher";
 
 export default {
   name: "App",
   components: {
-    LanguageSwitcher,
     Entry,
   },
 };

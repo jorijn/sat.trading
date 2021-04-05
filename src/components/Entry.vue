@@ -45,25 +45,8 @@
     </i18n-t>
     <h3>{{ t("more_information_heading") }}</h3>
     <ul>
-      <li>
-        <a href="https://bitcoin.nl/" target="_blank" rel="noopener"
-          >Bitcoin.nl</a
-        >
-      </li>
-      <li>
-        <a href="https://bitonic.nl" target="_blank" rel="noopener"
-          >Bitcoin kopen</a
-        >
-      </li>
-      <li>
-        <a href="https://beginnenmetbitcoin.com/" target="_blank" rel="noopener"
-          >Beginnen met Bitcoin (podcast)</a
-        >
-      </li>
-      <li>
-        <a href="https://satoshiradio.nl/" target="_blank" rel="noopener"
-          >Satoshi Radio (podcast)</a
-        >
+      <li v-for="link of information_links" :key="link.href">
+        <a :href="link.href" target="_blank" rel="noopener">{{ link.label }}</a>
       </li>
     </ul>
     <p class="authors">
@@ -80,17 +63,22 @@
         <img :src="GitHubLogo" alt="GitHub" width="16" />
       </a>
     </p>
+    <p>
+      <LanguageSwitcher />
+    </p>
   </div>
 </template>
 
 <script>
 import GitHubLogo from "../../public/assets/github.png";
 import { useI18n } from "vue-i18n";
+import LanguageSwitcher from "@/components/LanguageSwitcher";
 
 const defaultPizzaPriceInEur = 20;
 
 export default {
   name: "Entry",
+  components: { LanguageSwitcher },
   props: {
     msg: String,
   },
@@ -105,6 +93,15 @@ export default {
     };
   },
   computed: {
+    information_links() {
+      const data = this.t("information_links");
+      const links = [];
+      for (let link of data.split("**")) {
+        let [href, label] = link.split("##");
+        links.push({ href, label });
+      }
+      return links;
+    },
     pizzaPriceInBitcoin() {
       return (this.rate * defaultPizzaPriceInEur) / 100000000;
     },

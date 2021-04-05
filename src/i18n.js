@@ -1,4 +1,5 @@
 import { createI18n } from "vue-i18n";
+import supportedLocales from "./supported-locales";
 
 /**
  * Load locale messages
@@ -20,12 +21,59 @@ function loadLocaleMessages() {
       messages[locale] = locales(key).default;
     }
   });
+
   return messages;
+}
+
+function getBrowserLocale(options = {}) {
+  const defaultOptions = { countryCodeOnly: false };
+
+  const opt = { ...defaultOptions, ...options };
+
+  const navigatorLocale =
+    navigator.languages !== undefined
+      ? navigator.languages[0]
+      : navigator.language;
+
+  if (!navigatorLocale) {
+    return undefined;
+  }
+
+  return opt.countryCodeOnly
+    ? navigatorLocale.trim().split(/-|_/)[0]
+    : navigatorLocale.trim();
+}
+
+export function getSupportedLocales() {
+  let annotatedLocales = [];
+
+  for (const code of Object.keys(supportedLocales)) {
+    annotatedLocales.push({
+      code,
+      name: supportedLocales[code],
+    });
+  }
+
+  return annotatedLocales;
+}
+
+function supportedLocalesInclude(locale) {
+  return Object.keys(supportedLocales).includes(locale);
+}
+
+function getStartingLocale() {
+  const browserLocale = getBrowserLocale({ countryCodeOnly: true });
+
+  if (supportedLocalesInclude(browserLocale)) {
+    return browserLocale;
+  } else {
+    return "en";
+  }
 }
 
 export default createI18n({
   legacy: false,
-  locale: process.env.VUE_APP_I18N_LOCALE || "en",
-  fallbackLocale: process.env.VUE_APP_I18N_FALLBACK_LOCALE || "en",
+  locale: getStartingLocale(),
+  fallbackLocale: "en",
   messages: loadLocaleMessages(),
 });
