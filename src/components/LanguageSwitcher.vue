@@ -26,3 +26,10 @@ export default {
   data: () => ({ locales: getSupportedLocales() }),
 };
 </script>
+
+<style scoped>
+div {
+  display: inline;
+  margin: 0 3px;
+}
+</style>
