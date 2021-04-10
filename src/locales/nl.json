@@ -1,7 +1,7 @@
 {
-  "heading": "Hoeveel sat krijg je voor een euro?",
+  "heading": "Hoeveel sat krijg je voor een {currency}?",
   "pizza_explanation": "Op 22 mei 2010 kocht Laszlo Hanyecz 2 pizza’s. Hij betaalde hier 10.000 Bitcoin voor. Tegenwoordig zou je voor 2 pizza’s ongeveer {bitcoin} Bitcoin betalen. Klinkt niet echt lekker vinden wij. Wij hebben het liever over {sat} Satoshi. Sa-watte?! Een Satoshi is de kleinst mogelijke eenheid van Bitcoin (0.00000001 BTC).",
-  "our_cause": "Wij vinden het belangrijk om het te hebben over Satoshi in plaats van Bitcoin. Veel mensen weten namelijk niet dat een Bitcoin überhaupt deelbaar is. Omdat het nog een beetje lastig is om snel de waarde van 1 Euro in Satoshi om te zetten, hebben we deze website gemaakt.",
+  "our_cause": "Wij vinden het belangrijk om het te hebben over Satoshi in plaats van Bitcoin. Veel mensen weten namelijk niet dat een Bitcoin überhaupt deelbaar is. Omdat het nog een beetje lastig is om snel de waarde van 1 {currency} in Satoshi om te zetten, hebben we deze website gemaakt.",
   "stream_sat": "Wil je bovenstaand bedrag streamen voor ieder uur dat je naar je favoriete podcast luistert? Stel je app dan in op {stream_sat_minute}. Een voorbeeld van een wallet waarmee dat kan is {stream_sat_wallet}.",
   "stream_sat_minute_suffix": "per minuut",
   "more_information_heading": "Meer informatie over Bitcoin",

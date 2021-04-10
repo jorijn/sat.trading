@@ -1,27 +1,15 @@
 <template>
   <div class="centered">
-    <h1>{{ t("heading") }}</h1>
+    <h1>{{ t("heading", { currency: currencyLabel }) }}</h1>
     <p class="info">
       <span>
-        <input
-          ref="eur-elm"
-          type="number"
-          min="1"
-          v-model="eur"
-          @focus="lastChanged = 'eur'"
-        />
-        euro =
-        <input
-          ref="sat-elm"
-          type="number"
-          min="1"
-          v-model="sat"
-          @focus="lastChanged = 'sat'"
-        />
+        <GrowingNumberInput v-model="fiat" @focus="inFocus = 'fiat'" />
+        {{ currencyLabel }} =
+        <GrowingNumberInput v-model="sat" @focus="inFocus = 'sat'" />
         sat.
       </span>
     </p>
-    <i18n-t keypath="pizza_explanation" tag="p" class="story-start">
+    <i18n-t class="story-start" keypath="pizza_explanation" tag="p">
       <template v-slot:bitcoin>
         <strong>{{ pizzaPriceInBitcoinFormatted }}</strong>
       </template>
@@ -29,7 +17,14 @@
         <strong>{{ pizzaPriceInSatFormatted }}</strong>
       </template>
     </i18n-t>
-    <i18n-t keypath="our_cause" tag="p"> </i18n-t>
+    <p>
+      {{
+        t("our_cause", {
+          currency:
+            currencyLabel.charAt(0).toUpperCase() + currencyLabel.slice(1),
+        })
+      }}
+    </p>
     <i18n-t keypath="stream_sat" tag="p">
       <template v-slot:stream_sat_minute>
         <strong
@@ -38,15 +33,15 @@
         >
       </template>
       <template v-slot:stream_sat_wallet>
-        <a href="https://breez.technology/" target="_blank" rel="noopener"
+        <a href="https://breez.technology/" rel="noopener" target="_blank"
           >Breez</a
         >
       </template>
     </i18n-t>
     <h3>{{ t("more_information_heading") }}</h3>
     <ul>
-      <li v-for="link of information_links" :key="link.href">
-        <a :href="link.href" target="_blank" rel="noopener">{{ link.label }}</a>
+      <li v-for="link of informationLinks" :key="link.href">
+        <a :href="link.href" rel="noopener" target="_blank">{{ link.label }}</a>
       </li>
     </ul>
     <p class="authors">
@@ -57,14 +52,15 @@
     <p>
       <a
         href="https://github.com/jorijn/sat.trading"
-        target="_blank"
         rel="noopener"
+        target="_blank"
       >
         <img :src="GitHubLogo" alt="GitHub" width="16" />
       </a>
     </p>
     <p>
       <LanguageSwitcher />
+      <CurrencySwitcher v-model="currency" />
     </p>
   </div>
 </template>
@@ -73,27 +69,44 @@
 import GitHubLogo from "../../public/assets/github.png";
 import { useI18n } from "vue-i18n";
 import LanguageSwitcher from "@/components/LanguageSwitcher";
+import GrowingNumberInput from "@/components/GrowingNumberInput";
+import { localeStringDefault, localeStrings } from "@/supported-locales";
+import fetchStaticPrices from "@/commands/fetch-static-prices";
+import currencyLabelMap, {
+  bitstampSubscriptions,
+  currencyLocaleMap,
+  defaultCurrency,
+} from "@/supported-currencies";
+import CurrencySwitcher from "@/components/CurrencySwitcher";
 
-const defaultPizzaPriceInEur = 20;
+const defaultPizzaPriceInFiat = 20;
+const websockets = {};
 
 export default {
   name: "Entry",
-  components: { LanguageSwitcher },
+  components: { CurrencySwitcher, GrowingNumberInput, LanguageSwitcher },
   props: {
     msg: String,
   },
   data() {
     return {
-      websocket: null,
-      eur: 1,
-      sat: 10,
-      rate: 2000,
-      lastChanged: "eur",
+      rates: { eur: 50000, usd: 60000 }, // last known prices as starting point
+      fiat: 1,
+      sat: 2000,
+      inFocus: "fiat",
+      currency: currencyLocaleMap[this.locale] ?? defaultCurrency,
       GitHubLogo,
     };
   },
   computed: {
-    information_links() {
+    rate() {
+      // the current rate of one euro/dollar (depending on settings) for sat
+      return parseInt(((1 / this.rates[this.currency]) * 100000000).toFixed(0));
+    },
+    currencyLabel() {
+      return currencyLabelMap[this.currency] ?? "unknown";
+    },
+    informationLinks() {
       const data = this.t("information_links");
       const links = [];
       for (let link of data.split("**")) {
@@ -103,139 +116,106 @@ export default {
       return links;
     },
     pizzaPriceInBitcoin() {
-      return (this.rate * defaultPizzaPriceInEur) / 100000000;
+      return (this.rate * defaultPizzaPriceInFiat) / 100000000;
     },
     pizzaPriceInSat() {
-      return this.rate * defaultPizzaPriceInEur;
+      return this.rate * defaultPizzaPriceInFiat;
     },
     pizzaPriceInBitcoinFormatted() {
-      return this.format(this.pizzaPriceInBitcoin, 5);
+      return this.format(this.pizzaPriceInBitcoin, 0, 5);
     },
     pizzaPriceInSatFormatted() {
-      return this.format(this.pizzaPriceInSat, 0);
+      return this.format(this.pizzaPriceInSat, 0, 0);
     },
     streamingPriceInSatFormatted() {
-      return (this.sat / 60).toFixed(0);
+      return this.format(this.sat / 60, 0, 0);
     },
   },
   mounted() {
     this.initWebsocket();
-    this.parseValueFromURL();
 
-    fetch("https://api.blockchain.com/v3/exchange/tickers/BTC-EUR?cors=true")
-      .then((response) => response.json())
-      .then((data) => {
-        this.setRateFromPrice(data.last_trade_price);
-        this.sat = (this.eur * this.rate).toFixed(0);
-      });
-
-    window.onhashchange = this.parseValueFromURL;
+    fetchStaticPrices().then((data) => {
+      for (const [currency, price] of data) {
+        this.rates[currency] = price;
+      }
+    });
   },
   watch: {
-    eur() {
-      if (this.eur.toString().length > 2) {
-        this.$refs["eur-elm"].style.width = this.eur.toString().length + "rem";
-      } else {
-        this.$refs["eur-elm"].style.width = "2rem";
+    sat(value) {
+      if (this.inFocus === "sat") {
+        this.fiat = parseFloat((value / this.rate).toFixed(3));
       }
-
-      if (this.lastChanged == "eur") {
-        this.sat = (this.eur * this.rate).toFixed(0);
-      }
-
-      this.setURL();
     },
-    sat() {
-      if (this.sat.toString().length > 2) {
-        this.$refs["sat-elm"].style.width = this.sat.toString().length + "rem";
+    fiat(value) {
+      if (this.inFocus === "fiat") {
+        this.sat = parseFloat((value * this.rate).toFixed(0));
+      }
+    },
+    rate(value) {
+      if (this.inFocus === "fiat") {
+        this.sat = parseFloat((this.fiat * value).toFixed(0));
       } else {
-        this.$refs["sat-elm"].style.width = "2rem";
+        this.fiat = parseFloat((this.sat / value).toFixed(3));
       }
-
-      if (this.lastChanged == "sat") {
-        if (this.sat / this.rate >= 1) {
-          this.eur = (this.sat / this.rate).toFixed(2);
-        } else {
-          this.eur = (this.sat / this.rate).toFixed(3);
-        }
-
-        this.setURL();
-      }
+    },
+    locale() {
+      this.currency = currencyLocaleMap[this.locale] ?? defaultCurrency;
     },
   },
   setup() {
-    const { t } = useI18n();
+    const { t, locale } = useI18n();
 
-    return { t };
+    return { t, locale };
   },
   methods: {
-    setRateFromPrice(price) {
-      this.rate = parseInt(((1 / price) * 100000000).toFixed(0));
-
-      if (this.lastChanged == "eur") {
-        this.sat = (this.eur * this.rate).toFixed(0);
-      } else {
-        if (this.sat / this.rate >= 1) {
-          this.eur = (this.sat / this.rate).toFixed(2);
-        } else {
-          this.eur = (this.sat / this.rate).toFixed(3);
-        }
-      }
-    },
-    parseValueFromURL() {
-      if (window.location.hash) {
-        const rawValue = window.location.hash.substr(1);
-        if (!isNaN(parseFloat(rawValue))) {
-          this.eur = rawValue;
-        }
-      }
-    },
-    setURL() {
-      if (this.eur != 1) {
-        window.location.hash = "#" + this.eur.toString();
-      } else {
-        window.location.hash = "";
-      }
-    },
     format: function (value, min, max) {
-      return value.toLocaleString("nl-NL", {
+      const localeString = localeStrings[this.locale] ?? localeStringDefault;
+      return value.toLocaleString(localeString, {
         minimumFractionDigits: min,
         maximumFractionDigits: max,
       });
     },
-    initWebsocket() {
-      let ws;
-      ws = new WebSocket("wss://ws.bitstamp.net");
+    initWebsocket(market) {
+      let markets;
+      if (market) {
+        markets = [market];
+      } else {
+        markets = bitstampSubscriptions;
+      }
 
-      ws.onopen = function () {
-        ws.send(
-          JSON.stringify({
-            event: "bts:subscribe",
-            data: {
-              channel: "live_trades_btceur",
-            },
-          })
-        );
-      };
+      markets.forEach((market) => {
+        websockets[market] = new WebSocket("wss://ws.bitstamp.net");
 
-      ws.onmessage = (evt) => {
-        let response = JSON.parse(evt.data);
+        websockets[market].onopen = function () {
+          websockets[market].send(
+            JSON.stringify({
+              event: "bts:subscribe",
+              data: {
+                channel: "live_trades_" + market,
+              },
+            })
+          );
+        };
 
-        switch (response.event) {
-          case "trade": {
-            this.setRateFromPrice(response.data.price);
-            break;
+        websockets[market].onmessage = (evt) => {
+          let response = JSON.parse(evt.data);
+
+          switch (response.event) {
+            case "trade": {
+              this.rates[market.substr(3)] = response.data.price;
+              break;
+            }
+            case "bts:request_reconnect": {
+              this.initWebsocket();
+              break;
+            }
           }
-          case "bts:request_reconnect": {
-            this.initWebsocket();
-            break;
-          }
-        }
-      };
+        };
 
-      ws.onclose = function () {
-        this.initWebsocket();
-      };
+        websockets[market].onclose = function () {
+          this.initWebsocket(market);
+        };
+      });
     },
   },
 };
@@ -249,29 +229,5 @@ p.info {
 
 .story-start {
   margin-top: 40px;
-}
-
-input[type="number"] {
-  color: var(--color-text);
-  border: 0;
-  border-bottom: 1px solid #42b983;
-  background: inherit;
-  font: inherit;
-  width: 2rem;
-  text-align: center;
-}
-
-input[type="number"]:focus {
-  outline: none;
-}
-
-input[type="number"]::-webkit-outer-spin-button,
-input[type="number"]::-webkit-inner-spin-button {
-  -webkit-appearance: none;
-  margin: 0;
-}
-
-input[type="number"] {
-  -moz-appearance: textfield;
 }
 </style>
