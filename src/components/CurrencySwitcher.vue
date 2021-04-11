@@ -31,6 +31,9 @@ export default {
     this.currentCurrency = this.modelValue;
   },
   watch: {
+    modelValue(newValue) {
+      this.currentCurrency = newValue;
+    },
     currentCurrency(newValue) {
       this.$emit("update:modelValue", newValue);
     },
