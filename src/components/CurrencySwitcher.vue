@@ -1,32 +1,39 @@
 <template>
   <div class="currency">
-    <select
-      v-bind:value="modelValue"
-      v-on:change="$emit('update:modelValue', $event.target.value)"
+    <RadioBarInput
+      v-for="currency in Object.keys(supportedCurrencies)"
+      :key="currency"
+      :value="currency"
+      v-model="currentCurrency"
     >
-      <option
-        v-for="currency in Object.keys(supportedCurrencies)"
-        :key="currency"
-        :value="currency"
-      >
-        {{
-          supportedCurrencies[currency].charAt(0).toUpperCase() +
-          supportedCurrencies[currency].slice(1)
-        }}
-      </option>
-    </select>
+      {{
+        supportedCurrencies[currency].charAt(0).toUpperCase() +
+        supportedCurrencies[currency].slice(1)
+      }}
+    </RadioBarInput>
   </div>
 </template>
 
 <script>
 import supportedCurrencies from "@/supported-currencies";
+import RadioBarInput from "@/components/RadioBarInput";
 
 export default {
   name: "CurrencySwitcher",
+  components: { RadioBarInput },
   data() {
     return {
       supportedCurrencies: supportedCurrencies,
+      currentCurrency: null,
     };
+  },
+  mounted() {
+    this.currentCurrency = this.modelValue;
+  },
+  watch: {
+    currentCurrency(newValue) {
+      this.$emit("update:modelValue", newValue);
+    },
   },
   props: {
     modelValue: String,
@@ -36,7 +43,6 @@ export default {
 
 <style scoped>
 div {
-  display: inline;
-  margin: 0 3px;
+  margin-bottom: 5px;
 }
 </style>

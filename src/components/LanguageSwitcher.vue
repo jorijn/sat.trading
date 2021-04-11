@@ -1,23 +1,24 @@
 <template>
   <div class="locale-changer">
-    <select v-model="locale">
-      <option
-        v-for="locale in locales"
-        :key="`locale-${locale.code}`"
-        :value="locale.code"
-      >
-        {{ locale.name }}
-      </option>
-    </select>
+    <RadioBarInput
+      v-for="availableLocale in locales"
+      :key="availableLocale.code"
+      :value="availableLocale.code"
+      v-model="locale"
+    >
+      {{ availableLocale.name }}
+    </RadioBarInput>
   </div>
 </template>
 
 <script>
 import { getSupportedLocales } from "@/i18n";
 import { useI18n } from "vue-i18n";
+import RadioBarInput from "@/components/RadioBarInput";
 
 export default {
   name: "LanguageSwitcher",
+  components: { RadioBarInput },
   setup() {
     const { t, locale } = useI18n();
 
@@ -29,7 +30,6 @@ export default {
 
 <style scoped>
 div {
-  display: inline;
-  margin: 0 3px;
+  margin-bottom: 5px;
 }
 </style>

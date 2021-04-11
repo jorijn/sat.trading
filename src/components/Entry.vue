@@ -58,7 +58,7 @@
         <img :src="GitHubLogo" alt="GitHub" width="16" />
       </a>
     </p>
-    <p>
+    <p class="switchers">
       <LanguageSwitcher />
       <CurrencySwitcher v-model="currency" />
     </p>
@@ -175,10 +175,10 @@ export default {
         maximumFractionDigits: max,
       });
     },
-    initWebsocket(market) {
+    initWebsocket(requestedMarket) {
       let markets;
-      if (market) {
-        markets = [market];
+      if (requestedMarket) {
+        markets = [requestedMarket];
       } else {
         markets = bitstampSubscriptions;
       }
@@ -225,6 +225,10 @@ export default {
 p.info {
   font-weight: bold;
   font-size: 1.2rem;
+}
+
+p.switchers {
+  margin-bottom: 100px;
 }
 
 .story-start {
