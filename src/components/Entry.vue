@@ -3,9 +3,13 @@
     <h1>{{ t("heading", { currency: currencyLabel }) }}</h1>
     <p class="info">
       <span>
-        <GrowingNumberInput v-model="fiat" @focus="inFocus = 'fiat'" />
+        <GrowingNumberInput
+          v-model="fiat"
+          @focus="inFocus = 'fiat'"
+          step="0.01"
+        />
         {{ currencyLabel }} =
-        <GrowingNumberInput v-model="sat" @focus="inFocus = 'sat'" />
+        <GrowingNumberInput v-model="sat" @focus="inFocus = 'sat'" step="1" />
         sat.
       </span>
     </p>
@@ -101,6 +105,10 @@ export default {
   computed: {
     rate() {
       // the current rate of one euro/dollar (depending on settings) for sat
+      if (!this.rates[this.currency]) {
+        return 0;
+      }
+
       return parseInt(((1 / this.rates[this.currency]) * 100000000).toFixed(0));
     },
     currencyLabel() {
@@ -128,6 +136,10 @@ export default {
       return this.format(this.pizzaPriceInSat, 0, 0);
     },
     streamingPriceInSatFormatted() {
+      if (isNaN(this.sat)) {
+        return "...";
+      }
+
       return this.format(this.sat / 60, 0, 0);
     },
   },
@@ -142,16 +154,20 @@ export default {
   },
   watch: {
     sat(value) {
-      if (this.inFocus === "sat") {
+      if (this.inFocus === "sat" && !isNaN(value)) {
         this.fiat = parseFloat((value / this.rate).toFixed(3));
       }
     },
     fiat(value) {
-      if (this.inFocus === "fiat") {
+      if (this.inFocus === "fiat" && !isNaN(value)) {
         this.sat = parseFloat((value * this.rate).toFixed(0));
       }
     },
     rate(value) {
+      if (isNaN(this.fiat) || isNaN(this.sat)) {
+        return;
+      }
+
       if (this.inFocus === "fiat") {
         this.sat = parseFloat((this.fiat * value).toFixed(0));
       } else {
