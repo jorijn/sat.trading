@@ -3,18 +3,38 @@
     ref="value-elm"
     :min:="min"
     type="number"
+    :lang="localeStrings[locale ?? defaultCurrency]"
     v-bind:value="modelValue"
+    :step="step"
     v-on:focus="$emit('focus')"
     v-on:input="$emit('update:modelValue', parseFloat($event.target.value))"
   />
 </template>
 
 <script>
+import { useI18n } from "vue-i18n";
+import { defaultCurrency, localeStrings } from "@/supported-locales";
+
 export default {
   name: "GrowingNumberInput",
   props: {
     modelValue: Number,
     min: Number,
+    step: {
+      type: String,
+      default: "0.01",
+    },
+  },
+  setup() {
+    const { t, locale } = useI18n();
+
+    return { t, locale };
+  },
+  data() {
+    return {
+      localeStrings,
+      defaultCurrency,
+    };
   },
   methods: {
     setWidthFromValue() {
