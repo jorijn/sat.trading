@@ -148,9 +148,11 @@ export default {
       return this.format(this.sat / 60, 0, 0);
     },
     logoSrc() {
-      const lightColorScheme = window.matchMedia("(prefers-color-scheme: dark)")
-        .matches;
-      if (lightColorScheme) {
+      let isLightcolorScheme = window.matchMedia(
+        "(prefers-color-scheme: light)"
+      ).matches;
+
+      if (isLightcolorScheme) {
         return SatTradingLogoLight;
       } else {
         return SatTradingLogoDark;
