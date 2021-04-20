@@ -1,5 +1,6 @@
 <template>
   <div class="centered">
+    <img :src="SatTradingLogo" alt="Logo sat.trading" class="logo" />
     <h1>Hoeveel sat krijg je voor een euro?</h1>
     <p class="info">
       <span>
@@ -86,6 +87,7 @@
 </template>
 
 <script>
+import SatTradingLogo from "../../public/assets/logo_sat-trading.svg";
 import GitHubLogo from "../../public/assets/github.png";
 
 const defaultPizzaPriceInEur = 20;
@@ -102,6 +104,7 @@ export default {
       sat: 10,
       rate: 2000,
       lastChanged: "eur",
+      SatTradingLogo,
       GitHubLogo,
     };
   },
@@ -241,6 +244,15 @@ export default {
 </script>
 
 <style scoped>
+.logo {
+  height: 24px;
+}
+@media (min-width: 768px) {
+  .logo {
+    height: 34px;
+  }
+}
+
 p.info {
   font-weight: bold;
   font-size: 1.2rem;
