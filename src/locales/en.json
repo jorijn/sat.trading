@@ -1,0 +1,10 @@
+{
+  "heading": "How much sat would you get for a {currency}?",
+  "pizza_explanation": "On May 22, 2010, Laszlo Hanyecz bought 2 pizzas. He paid 10,000 Bitcoin for this. Today you would pay about {bitcoin} Bitcoin for 2 pizzas. Doesn't sound really good, we think. We prefer to talk about {sat} Satoshi. Sa-what?! A Satoshi is the smallest possible unit of Bitcoin (0.00000001 BTC).",
+  "our_cause": "We think it is important to talk about Satoshi instead of Bitcoin. Many people do not know that a Bitcoin is divisible at all. Because it is still a bit difficult to quickly convert the value of 1 {currency} into Satoshi, we have created this website.",
+  "stream_sat": "Do you want to stream the above amount for every hour that you listen to your favorite podcast? Then set your app to {stream_sat_minute}. An example of a wallet with which this can be done is {stream_sat_wallet}.",
+  "stream_sat_minute_suffix": "per minute",
+  "more_information_heading": "Mere information about Bitcoin",
+  "by": "by",
+  "information_links": "https://bitcoin-only.com/##Bitcoin resources**https://bitcoin.org/##The Bitcoin website**https://www.swanbitcoin.com/##Bitcoin savings plan**https://www.kraken.com/##Buy Bitcoin"
+}

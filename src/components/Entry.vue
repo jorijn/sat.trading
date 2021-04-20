@@ -1,87 +1,71 @@
 <template>
   <div class="centered">
     <img :src="SatTradingLogo" alt="Logo sat.trading" class="logo" />
-    <h1>Hoeveel sat krijg je voor een euro?</h1>
+    <h1>{{ t("heading", { currency: currencyLabel }) }}</h1>
     <p class="info">
       <span>
-        <input
-          ref="eur-elm"
-          type="number"
-          min="1"
-          v-model="eur"
-          @focus="lastChanged = 'eur'"
+        <GrowingNumberInput
+          v-model="fiat"
+          @focus="inFocus = 'fiat'"
+          step="0.01"
         />
-        euro =
-        <input
-          ref="sat-elm"
-          type="number"
-          min="1"
-          v-model="sat"
-          @focus="lastChanged = 'sat'"
-        />
+        {{ currencyLabel }} =
+        <GrowingNumberInput v-model="sat" @focus="inFocus = 'sat'" step="1" />
         sat.
       </span>
     </p>
-    <p class="story-start">
-      Op 22 mei 2010 kocht Laszlo Hanyecz 2 pizza’s. Hij betaalde hier 10.000
-      Bitcoin voor. Tegenwoordig zou je voor 2 pizza’s ongeveer
-      <strong>{{ pizzaPriceInBitcoinFormatted }}</strong> Bitcoin betalen.
-      Klinkt niet echt lekker vinden wij. Wij hebben het liever over
-      {{ pizzaPriceInSatFormatted }}
-      Satoshi. Sa-watte?! Een Satoshi is de kleinst mogelijke eenheid van
-      Bitcoin (0.00000001 BTC).
-    </p>
+    <i18n-t class="story-start" keypath="pizza_explanation" tag="p">
+      <template v-slot:bitcoin>
+        <strong>{{ pizzaPriceInBitcoinFormatted }}</strong>
+      </template>
+      <template v-slot:sat>
+        <strong>{{ pizzaPriceInSatFormatted }}</strong>
+      </template>
+    </i18n-t>
     <p>
-      Wij vinden het belangrijk om het te hebben over Satoshi in plaats van
-      Bitcoin. Veel mensen weten namelijk niet dat een Bitcoin überhaupt
-      deelbaar is. Omdat het nog een beetje lastig is om snel de waarde van 1
-      Euro in Satoshi om te zetten, hebben we deze website gemaakt.
+      {{
+        t("our_cause", {
+          currency:
+            currencyLabel.charAt(0).toUpperCase() + currencyLabel.slice(1),
+        })
+      }}
     </p>
-    <p>
-      Wil je bovenstaand bedrag streamen voor ieder uur dat je naar je favoriete
-      podcast luistert? Stel je app dan in op
-      <strong>{{ streamingPriceInSatFormatted }} sats per minuut.</strong>
-      Een voorbeeld van een wallet waarmee dat kan is
-      <a href="https://breez.technology/" target="_blank" rel="noopener"
-        >Breez</a
-      >.
-    </p>
-    <h3>Meer informatie over Bitcoin</h3>
+    <i18n-t keypath="stream_sat" tag="p">
+      <template v-slot:stream_sat_minute>
+        <strong
+          >{{ streamingPriceInSatFormatted }}
+          {{ t("stream_sat_minute_suffix") }}</strong
+        >
+      </template>
+      <template v-slot:stream_sat_wallet>
+        <a href="https://breez.technology/" rel="noopener" target="_blank"
+          >Breez</a
+        >
+      </template>
+    </i18n-t>
+    <h3>{{ t("more_information_heading") }}</h3>
     <ul>
-      <li>
-        <a href="https://bitcoin.nl/" target="_blank" rel="noopener"
-          >Bitcoin.nl</a
-        >
-      </li>
-      <li>
-        <a href="https://bitonic.nl" target="_blank" rel="noopener"
-          >Bitcoin kopen</a
-        >
-      </li>
-      <li>
-        <a href="https://beginnenmetbitcoin.com/" target="_blank" rel="noopener"
-          >Beginnen met Bitcoin (podcast)</a
-        >
-      </li>
-      <li>
-        <a href="https://satoshiradio.nl/" target="_blank" rel="noopener"
-          >Satoshi Radio (podcast)</a
-        >
+      <li v-for="link of informationLinks" :key="link.href">
+        <a :href="link.href" rel="noopener" target="_blank">{{ link.label }}</a>
       </li>
     </ul>
     <p class="authors">
-      door <a href="https://jorijn.com/">Jorijn</a>,
+      {{ t("by") }} <a href="https://jorijn.com/">Jorijn</a>,
       <a href="https://satoshiradio.nl">Satoshi Radio</a> &
       <a href="https://github.com/Lexus123">Lex</a>
     </p>
     <p>
       <a
         href="https://github.com/jorijn/sat.trading"
-        target="_blank"
         rel="noopener"
+        target="_blank"
       >
         <img :src="GitHubLogo" alt="GitHub" width="16" />
       </a>
+    </p>
+    <p class="switchers">
+      <LanguageSwitcher />
+      <CurrencySwitcher v-model="currency" />
     </p>
   </div>
 </template>
@@ -89,155 +73,168 @@
 <script>
 import SatTradingLogo from "../../public/assets/logo_sat-trading.svg";
 import GitHubLogo from "../../public/assets/github.png";
+import { useI18n } from "vue-i18n";
+import LanguageSwitcher from "@/components/LanguageSwitcher";
+import GrowingNumberInput from "@/components/GrowingNumberInput";
+import { localeStringDefault, localeStrings } from "@/supported-locales";
+import fetchStaticPrices from "@/commands/fetch-static-prices";
+import currencyLabelMap, {
+  bitstampSubscriptions,
+  currencyLocaleMap,
+  defaultCurrency,
+} from "@/supported-currencies";
+import CurrencySwitcher from "@/components/CurrencySwitcher";
 
-const defaultPizzaPriceInEur = 20;
+const defaultPizzaPriceInFiat = 20;
+const websockets = {};
 
 export default {
   name: "Entry",
+  components: { CurrencySwitcher, GrowingNumberInput, LanguageSwitcher },
   props: {
     msg: String,
   },
   data() {
     return {
-      websocket: null,
-      eur: 1,
-      sat: 10,
-      rate: 2000,
-      lastChanged: "eur",
+      rates: { eur: 50000, usd: 60000 }, // last known prices as starting point
+      fiat: 1,
+      sat: 2000,
+      inFocus: "fiat",
+      currency: currencyLocaleMap[this.locale] ?? defaultCurrency,
       SatTradingLogo,
       GitHubLogo,
     };
   },
   computed: {
+    rate() {
+      // the current rate of one euro/dollar (depending on settings) for sat
+      if (!this.rates[this.currency]) {
+        return 0;
+      }
+
+      return parseInt(((1 / this.rates[this.currency]) * 100000000).toFixed(0));
+    },
+    currencyLabel() {
+      return currencyLabelMap[this.currency] ?? "unknown";
+    },
+    informationLinks() {
+      const data = this.t("information_links");
+      const links = [];
+      for (let link of data.split("**")) {
+        let [href, label] = link.split("##");
+        links.push({ href, label });
+      }
+      return links;
+    },
     pizzaPriceInBitcoin() {
-      return (this.rate * defaultPizzaPriceInEur) / 100000000;
+      return (this.rate * defaultPizzaPriceInFiat) / 100000000;
     },
     pizzaPriceInSat() {
-      return this.rate * defaultPizzaPriceInEur;
+      return this.rate * defaultPizzaPriceInFiat;
     },
     pizzaPriceInBitcoinFormatted() {
-      return this.format(this.pizzaPriceInBitcoin, 5);
+      return this.format(this.pizzaPriceInBitcoin, 0, 5);
     },
     pizzaPriceInSatFormatted() {
-      return this.format(this.pizzaPriceInSat, 0);
+      return this.format(this.pizzaPriceInSat, 0, 0);
     },
     streamingPriceInSatFormatted() {
-      return (this.sat / 60).toFixed(0);
+      if (isNaN(this.sat)) {
+        return "...";
+      }
+
+      return this.format(this.sat / 60, 0, 0);
     },
   },
   mounted() {
     this.initWebsocket();
-    this.parseValueFromURL();
 
-    fetch("https://api.blockchain.com/v3/exchange/tickers/BTC-EUR?cors=true")
-      .then((response) => response.json())
-      .then((data) => {
-        this.setRateFromPrice(data.last_trade_price);
-        this.sat = (this.eur * this.rate).toFixed(0);
-      });
-
-    window.onhashchange = this.parseValueFromURL;
+    fetchStaticPrices().then((data) => {
+      for (const [currency, price] of data) {
+        this.rates[currency] = price;
+      }
+    });
   },
   watch: {
-    eur() {
-      if (this.eur.toString().length > 2) {
-        this.$refs["eur-elm"].style.width = this.eur.toString().length + "rem";
-      } else {
-        this.$refs["eur-elm"].style.width = "2rem";
+    sat(value) {
+      if (this.inFocus === "sat" && !isNaN(value)) {
+        this.fiat = parseFloat((value / this.rate).toFixed(3));
       }
-
-      if (this.lastChanged == "eur") {
-        this.sat = (this.eur * this.rate).toFixed(0);
-      }
-
-      this.setURL();
     },
-    sat() {
-      if (this.sat.toString().length > 2) {
-        this.$refs["sat-elm"].style.width = this.sat.toString().length + "rem";
+    fiat(value) {
+      if (this.inFocus === "fiat" && !isNaN(value)) {
+        this.sat = parseFloat((value * this.rate).toFixed(0));
+      }
+    },
+    rate(value) {
+      if (isNaN(this.fiat) || isNaN(this.sat)) {
+        return;
+      }
+
+      if (this.inFocus === "fiat") {
+        this.sat = parseFloat((this.fiat * value).toFixed(0));
       } else {
-        this.$refs["sat-elm"].style.width = "2rem";
+        this.fiat = parseFloat((this.sat / value).toFixed(3));
       }
-
-      if (this.lastChanged == "sat") {
-        if (this.sat / this.rate >= 1) {
-          this.eur = (this.sat / this.rate).toFixed(2);
-        } else {
-          this.eur = (this.sat / this.rate).toFixed(3);
-        }
-
-        this.setURL();
-      }
+    },
+    locale() {
+      this.currency = currencyLocaleMap[this.locale] ?? defaultCurrency;
     },
   },
-  methods: {
-    setRateFromPrice(price) {
-      this.rate = parseInt(((1 / price) * 100000000).toFixed(0));
+  setup() {
+    const { t, locale } = useI18n();
 
-      if (this.lastChanged == "eur") {
-        this.sat = (this.eur * this.rate).toFixed(0);
-      } else {
-        if (this.sat / this.rate >= 1) {
-          this.eur = (this.sat / this.rate).toFixed(2);
-        } else {
-          this.eur = (this.sat / this.rate).toFixed(3);
-        }
-      }
-    },
-    parseValueFromURL() {
-      if (window.location.hash) {
-        const rawValue = window.location.hash.substr(1);
-        if (!isNaN(parseFloat(rawValue))) {
-          this.eur = rawValue;
-        }
-      }
-    },
-    setURL() {
-      if (this.eur != 1) {
-        window.location.hash = "#" + this.eur.toString();
-      } else {
-        window.location.hash = "";
-      }
-    },
+    return { t, locale };
+  },
+  methods: {
     format: function (value, min, max) {
-      return value.toLocaleString("nl-NL", {
+      const localeString = localeStrings[this.locale] ?? localeStringDefault;
+      return value.toLocaleString(localeString, {
         minimumFractionDigits: min,
         maximumFractionDigits: max,
       });
     },
-    initWebsocket() {
-      let ws;
-      ws = new WebSocket("wss://ws.bitstamp.net");
+    initWebsocket(requestedMarket) {
+      let markets;
+      if (requestedMarket) {
+        markets = [requestedMarket];
+      } else {
+        markets = bitstampSubscriptions;
+      }
 
-      ws.onopen = function () {
-        ws.send(
-          JSON.stringify({
-            event: "bts:subscribe",
-            data: {
-              channel: "live_trades_btceur",
-            },
-          })
-        );
-      };
+      markets.forEach((market) => {
+        websockets[market] = new WebSocket("wss://ws.bitstamp.net");
 
-      ws.onmessage = (evt) => {
-        let response = JSON.parse(evt.data);
+        websockets[market].onopen = function () {
+          websockets[market].send(
+            JSON.stringify({
+              event: "bts:subscribe",
+              data: {
+                channel: "live_trades_" + market,
+              },
+            })
+          );
+        };
 
-        switch (response.event) {
-          case "trade": {
-            this.setRateFromPrice(response.data.price);
-            break;
+        websockets[market].onmessage = (evt) => {
+          let response = JSON.parse(evt.data);
+
+          switch (response.event) {
+            case "trade": {
+              this.rates[market.substr(3)] = response.data.price;
+              break;
+            }
+            case "bts:request_reconnect": {
+              this.initWebsocket();
+              break;
+            }
           }
-          case "bts:request_reconnect": {
-            this.initWebsocket();
-            break;
-          }
-        }
-      };
+        };
 
-      ws.onclose = function () {
-        this.initWebsocket();
-      };
+        websockets[market].onclose = function () {
+          this.initWebsocket(market);
+        };
+      });
     },
   },
 };
@@ -258,31 +255,11 @@ p.info {
   font-size: 1.2rem;
 }
 
+p.switchers {
+  margin-bottom: 100px;
+}
+
 .story-start {
   margin-top: 40px;
-}
-
-input[type="number"] {
-  color: var(--color-text);
-  border: 0;
-  border-bottom: 1px solid #42b983;
-  background: inherit;
-  font: inherit;
-  width: 2rem;
-  text-align: center;
-}
-
-input[type="number"]:focus {
-  outline: none;
-}
-
-input[type="number"]::-webkit-outer-spin-button,
-input[type="number"]::-webkit-inner-spin-button {
-  -webkit-appearance: none;
-  margin: 0;
-}
-
-input[type="number"] {
-  -moz-appearance: textfield;
 }
 </style>
