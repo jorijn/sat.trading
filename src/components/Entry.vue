@@ -1,6 +1,6 @@
 <template>
   <div class="centered">
-    <img :src="SatTradingLogo" alt="Logo sat.trading" class="logo" />
+    <img :src="logoSrc" alt="Logo sat.trading" class="logo" />
     <h1>{{ t("heading", { currency: currencyLabel }) }}</h1>
     <p class="info">
       <span>
@@ -71,7 +71,8 @@
 </template>
 
 <script>
-import SatTradingLogo from "../../public/assets/logo_sat-trading.svg";
+import SatTradingLogoLight from "../../public/assets/logo-light_sat-trading.svg";
+import SatTradingLogoDark from "../../public/assets/logo-dark_sat-trading.svg";
 import GitHubLogo from "../../public/assets/github.png";
 import { useI18n } from "vue-i18n";
 import LanguageSwitcher from "@/components/LanguageSwitcher";
@@ -101,7 +102,8 @@ export default {
       sat: 2000,
       inFocus: "fiat",
       currency: currencyLocaleMap[this.locale] ?? defaultCurrency,
-      SatTradingLogo,
+      SatTradingLogoLight,
+      SatTradingLogoDark,
       GitHubLogo,
     };
   },
@@ -144,6 +146,15 @@ export default {
       }
 
       return this.format(this.sat / 60, 0, 0);
+    },
+    logoSrc() {
+      const lightColorScheme = window.matchMedia("(prefers-color-scheme: dark)")
+        .matches;
+      if (lightColorScheme) {
+        return SatTradingLogoLight;
+      } else {
+        return SatTradingLogoDark;
+      }
     },
   },
   mounted() {
@@ -243,6 +254,7 @@ export default {
 <style scoped>
 .logo {
   height: 24px;
+  margin: 20px 0;
 }
 @media (min-width: 768px) {
   .logo {
