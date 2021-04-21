@@ -1,6 +1,6 @@
 # sat.trading
 
-(Dutch) Displays the live conversion rate between EUR and BTC (sat unit)
+Displays the live conversion rate between EUR/USD and BTC (sat unit)
 
 ## Project setup
 
