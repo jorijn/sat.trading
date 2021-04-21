@@ -1,4 +1,4 @@
-FROM node:14 AS build
+FROM node:15-alpine AS build
 
 WORKDIR /usr/src/app
 
@@ -10,6 +10,6 @@ COPY . ./
 
 RUN yarn build
 
-FROM bitnami/nginx:1.18.0 AS final
+FROM nginx:1.18-alpine AS final
 
-COPY --from=build /usr/src/app/dist /app
+COPY --from=build /usr/src/app/dist /usr/share/nginx/html
