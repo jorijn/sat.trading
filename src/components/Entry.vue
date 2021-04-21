@@ -1,6 +1,6 @@
 <template>
   <div class="centered">
-    <img :src="logoSrc" alt="Logo sat.trading" class="logo" />
+    <Logo />
     <h1>{{ t("heading", { currency: currencyLabel }) }}</h1>
     <p class="info">
       <span>
@@ -71,8 +71,7 @@
 </template>
 
 <script>
-import SatTradingLogoLight from "../../public/assets/logo-light_sat-trading.svg";
-import SatTradingLogoDark from "../../public/assets/logo-dark_sat-trading.svg";
+import Logo from "@/components/Logo";
 import GitHubLogo from "../../public/assets/github.png";
 import { useI18n } from "vue-i18n";
 import LanguageSwitcher from "@/components/LanguageSwitcher";
@@ -91,7 +90,7 @@ const websockets = {};
 
 export default {
   name: "Entry",
-  components: { CurrencySwitcher, GrowingNumberInput, LanguageSwitcher },
+  components: { Logo, CurrencySwitcher, GrowingNumberInput, LanguageSwitcher },
   props: {
     msg: String,
   },
@@ -102,8 +101,7 @@ export default {
       sat: 2000,
       inFocus: "fiat",
       currency: currencyLocaleMap[this.locale] ?? defaultCurrency,
-      SatTradingLogoLight,
-      SatTradingLogoDark,
+      Logo,
       GitHubLogo,
     };
   },
@@ -146,17 +144,6 @@ export default {
       }
 
       return this.format(this.sat / 60, 0, 0);
-    },
-    logoSrc() {
-      let isLightcolorScheme = window.matchMedia(
-        "(prefers-color-scheme: light)"
-      ).matches;
-
-      if (isLightcolorScheme) {
-        return SatTradingLogoLight;
-      } else {
-        return SatTradingLogoDark;
-      }
     },
   },
   mounted() {
@@ -254,16 +241,6 @@ export default {
 </script>
 
 <style scoped>
-.logo {
-  height: 24px;
-  margin: 20px 0;
-}
-@media (min-width: 768px) {
-  .logo {
-    height: 34px;
-  }
-}
-
 p.info {
   font-weight: bold;
   font-size: 1.2rem;
