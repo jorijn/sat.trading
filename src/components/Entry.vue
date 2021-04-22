@@ -1,5 +1,6 @@
 <template>
   <div class="centered">
+    <Logo />
     <h1>{{ t("heading", { currency: currencyLabel }) }}</h1>
     <p class="info">
       <span>
@@ -70,6 +71,7 @@
 </template>
 
 <script>
+import Logo from "@/components/Logo";
 import GitHubLogo from "../../public/assets/github.png";
 import { useI18n } from "vue-i18n";
 import LanguageSwitcher from "@/components/LanguageSwitcher";
@@ -88,7 +90,7 @@ const websockets = {};
 
 export default {
   name: "Entry",
-  components: { CurrencySwitcher, GrowingNumberInput, LanguageSwitcher },
+  components: { Logo, CurrencySwitcher, GrowingNumberInput, LanguageSwitcher },
   props: {
     msg: String,
   },
@@ -99,6 +101,7 @@ export default {
       sat: 2000,
       inFocus: "fiat",
       currency: currencyLocaleMap[this.locale] ?? defaultCurrency,
+      Logo,
       GitHubLogo,
     };
   },
