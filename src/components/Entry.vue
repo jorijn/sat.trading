@@ -11,7 +11,13 @@
         />
         {{ currencyLabel }} =
         <GrowingNumberInput v-model="sat" @focus="inFocus = 'sat'" step="1" />
-        sat.
+        sat. =
+        <GrowingNumberInput
+          v-model="btc"
+          @focus="inFocus = 'btc'"
+          step="0.00000001"
+        />
+        BTC
       </span>
     </p>
     <i18n-t class="story-start" keypath="pizza_explanation" tag="p">
@@ -87,6 +93,7 @@ import CurrencySwitcher from "@/components/CurrencySwitcher";
 
 const defaultPizzaPriceInFiat = 20;
 const websockets = {};
+const satsPerBtc = 100000000;
 
 export default {
   name: "Entry",
@@ -99,6 +106,7 @@ export default {
       rates: { eur: 50000, usd: 60000 }, // last known prices as starting point
       fiat: 1,
       sat: 2000,
+      btc: 0.00002,
       inFocus: "fiat",
       currency: currencyLocaleMap[this.locale] ?? defaultCurrency,
       Logo,
@@ -111,8 +119,9 @@ export default {
       if (!this.rates[this.currency]) {
         return 0;
       }
-
-      return parseInt(((1 / this.rates[this.currency]) * 100000000).toFixed(0));
+      return parseInt(
+        ((1 / this.rates[this.currency]) * satsPerBtc).toFixed(0)
+      );
     },
     currencyLabel() {
       return currencyLabelMap[this.currency] ?? "unknown";
@@ -127,7 +136,7 @@ export default {
       return links;
     },
     pizzaPriceInBitcoin() {
-      return (this.rate * defaultPizzaPriceInFiat) / 100000000;
+      return (this.rate * defaultPizzaPriceInFiat) / satsPerBtc;
     },
     pizzaPriceInSat() {
       return this.rate * defaultPizzaPriceInFiat;
@@ -159,23 +168,43 @@ export default {
     sat(value) {
       if (this.inFocus === "sat" && !isNaN(value)) {
         this.fiat = parseFloat((value / this.rate).toFixed(3));
+        this.btc = value / satsPerBtc;
       }
     },
     fiat(value) {
       if (this.inFocus === "fiat" && !isNaN(value)) {
         this.sat = parseFloat((value * this.rate).toFixed(0));
+        this.btc = this.sat / satsPerBtc;
+      }
+    },
+    btc(value) {
+      if (this.inFocus === "btc" && !isNaN(value)) {
+        this.sat = value * satsPerBtc;
+        this.fiat = parseFloat((this.sat / this.rate).toFixed(3));
       }
     },
     rate(value) {
+      console.warn("new rate: ", value, " focus:", this.inFocus);
       if (isNaN(this.fiat) || isNaN(this.sat)) {
         return;
       }
 
+      console.debug("old fiat", this.fiat);
+      console.debug("old sat", this.sat);
+      console.debug("old BTC", this.btc);
       if (this.inFocus === "fiat") {
         this.sat = parseFloat((this.fiat * value).toFixed(0));
+        this.btc = this.sat / satsPerBtc;
+      } else if (this.inFocus === "sat") {
+        this.fiat = parseFloat((this.sat / value).toFixed(3));
+        this.btc = this.sat / satsPerBtc;
       } else {
         this.fiat = parseFloat((this.sat / value).toFixed(3));
+        this.sat = parseFloat((this.fiat * value).toFixed(0));
       }
+      console.debug("new fiat", this.fiat);
+      console.debug("new sat", this.sat);
+      console.debug("new BTC", this.btc);
     },
     locale() {
       this.currency = currencyLocaleMap[this.locale] ?? defaultCurrency;
