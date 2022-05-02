@@ -11,7 +11,7 @@
   "dependencies": {
     "core-js": "^3.16.2",
     "vue": "^3.0.0",
-    "vue-i18n": "^9.1.7"
+    "vue-i18n": "^9.1.10"
   },
   "devDependencies": {
     "@intlify/vue-i18n-loader": "^2.0.0",
